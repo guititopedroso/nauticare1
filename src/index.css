@@ -82,3 +82,13 @@
     text-wrap: balance;
   }
 }
+
+.booked-day {
+    background-color: orange;
+    color: white;
+}
+
+.confirmed-day {
+    background-color: green;
+    color: white;
+}

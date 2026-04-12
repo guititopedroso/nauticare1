@@ -1,0 +1,35 @@
+
+name: Sync to Hostinger Repo
+
+# This action runs on every push to the main branch
+on:
+  push:
+    branches:
+      - main  # <-- IMPORTANT: This is your main branch. Change if necessary.
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the code from the source repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          # Fetches all history for all branches and tags
+          fetch-depth: 0
+
+      # Step 2: Push the code to the destination repository
+      - name: Push to destination repository
+        env:
+          # The Personal Access Token we stored as a secret
+          SYNC_PAT: ${{ secrets.SYNC_PAT }}
+          # The full URL of the destination repository
+          DEST_REPO_URL: "https://github.com/guititopedroso/nauticare1.git"
+        run: |
+          echo "Pushing to destination repository..."
+          # We use --force because this is a mirror. 
+          # This will overwrite the destination repository's history.
+          git push --force --all "$DEST_REPO_URL"
+          git push --force --tags "$DEST_REPO_URL"
+          echo "Synchronization complete."
+

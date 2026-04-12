@@ -1,247 +1,269 @@
-import { boatSizeCategories, services, packs } from "@/data/services";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { services, packs, boatSizeCategories, type BoatSize } from "@/data/services";
 import { Calendar } from "@/components/ui/calendar";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 
-const bookingSchema = z.object({
-  date: z.date(),
-  boatSize: z.enum(["ate7m", "7a12m", "12a18m", "mais18m"]),
-  services: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: "Tens de selecionar pelo menos um serviço.",
-  }),
-  name: z.string(),
-  email: z.string().email(),
-  phone: z.string(),
-  boatName: z.string(),
-  marina: z.string(),
-  observations: z.string().optional(),
-});
-
-export type BookingFormData = z.infer<typeof bookingSchema>;
+const locations = ["Marina de Setúbal", "Marina de Tróia"];
 
 interface BookingFormProps {
-  onSubmit: (data: BookingFormData) => void;
+  setSubmitted: (submitted: boolean) => void;
 }
 
-export function BookingForm({ onSubmit }: BookingFormProps) {
-  const form = useForm<BookingFormData>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      services: [],
-    },
-  });
+export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedPack, setSelectedPack] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [boatName, setBoatName] = useState("");
+  const [boatSize, setBoatSize] = useState<BoatSize | "">("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const toggleService = (id: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+    if (selectedPack) setSelectedPack("");
+  };
+
+  const selectPack = (id: string) => {
+    setSelectedPack(id === selectedPack ? "" : id);
+    if (id !== selectedPack) setSelectedServices([]);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if ((selectedServices.length === 0 && !selectedPack) || !name || !phone || !selectedDate) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+    };
+    setSubmitted(true);
+  };
+
+  const isSubmitDisabled = (selectedServices.length === 0 && !selectedPack) || !name || !phone || !selectedDate;
+
+  const formItemVariant = {
+    hidden: { y: 20, opacity: 0 },
+    visible: (i:number) => ({ 
+      y: 0, 
+      opacity: 1, 
+      transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" } 
+    })
+  }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Data da Reserva</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Selecione uma data</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="boatSize"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Qual o tamanho da sua embarcação?</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  {boatSizeCategories.map((category) => (
-                    <FormItem key={category.id} className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value={category.id} />
-                      </FormControl>
-                      <FormLabel className="font-normal">
-                        {category.label} ({category.description})
-                      </FormLabel>
-                    </FormItem>
-                  ))}
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="services"
-          render={() => (
-            <FormItem>
-              <div className="mb-4">
-                <FormLabel className="text-base">Serviços</FormLabel>
-                <FormDescription>
-                  Selecione os serviços que pretende.
-                </FormDescription>
-              </div>
-              {services.map((service) => (
-                <FormField
-                  key={service.id}
-                  control={form.control}
-                  name="services"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={service.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(service.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, service.id])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== service.id
-                                    )
-                                  );
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          {service.name}
-                        </FormLabel>
-                      </FormItem>
-                    );
-                  }}
+    <motion.form 
+      onSubmit={handleSubmit} 
+      className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8 bg-white p-6 md:p-10 rounded-lg shadow-xl shadow-black/5"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+    >
+      {/* ---- COLUMN 1: SERVICES ---- */}
+      <div className="lg:col-span-1 flex flex-col gap-6">
+        {/* Individual Services */}
+        <motion.div custom={0} variants={formItemVariant}>
+          <label className="font-body text-sm font-semibold tracking-wide text-gray-700 mb-3 block">
+            1. Escolha os Serviços
+          </label>
+          <div className="space-y-2">
+            {services.map((service) => (
+              <label
+                key={service.id}
+                className={`flex items-center gap-3 border rounded-md px-4 py-3 cursor-pointer transition-all duration-200 ${
+                  selectedServices.includes(service.id)
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/50"
+                    : "border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedServices.includes(service.id)}
+                  onChange={() => toggleService(service.id)}
+                  className="sr-only"
                 />
-              ))}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome</FormLabel>
-              <FormControl>
-                <Input placeholder="O seu nome" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="O seu email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Telefone</FormLabel>
-              <FormControl>
-                <Input placeholder="O seu telefone" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="boatName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome da Embarcação</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome da sua embarcação" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="marina"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Porto de Abrigo</FormLabel>
-              <FormControl>
-                <Input placeholder="Onde se encontra a sua embarcação" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="observations"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Observações</FormLabel>
-              <FormControl>
-                <Input placeholder="Observações adicionais" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  selectedServices.includes(service.id)
+                    ? "bg-primary border-primary"
+                    : "border-gray-300 bg-white"
+                }`}>
+                  {selectedServices.includes(service.id) && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className="font-body text-sm text-gray-800">{service.name}</span>
+              </label>
+            ))}
+          </div>
+        </motion.div>
 
-        <Button type="submit">Submeter</Button>
-      </form>
-    </Form>
+        {/* Packs */}
+        <motion.div custom={1} variants={formItemVariant}>
+          <label className="font-body text-xs uppercase tracking-widest text-gray-500 mb-3 block">
+            Ou escolha um Pack
+          </label>
+          <div className="space-y-2">
+            {packs.map((pack) => (
+              <label
+                key={pack.id}
+                className={`flex items-center gap-3 border rounded-md px-4 py-3 cursor-pointer transition-all duration-200 ${
+                  selectedPack === pack.id
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/50"
+                    : "border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="pack"
+                  checked={selectedPack === pack.id}
+                  onChange={() => selectPack(pack.id)}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  selectedPack === pack.id
+                    ? "border-primary bg-white"
+                    : "border-gray-300"
+                }`}>
+                  {selectedPack === pack.id && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                  )}
+                </div>
+                <span className="font-body text-sm text-gray-800">{pack.name}</span>
+              </label>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ---- COLUMN 2: DETAILS ---- */}
+      <div className="lg:col-span-1 flex flex-col gap-5">
+        <motion.div custom={2} variants={formItemVariant}>
+          <label className="font-body text-sm font-semibold tracking-wide text-gray-700 mb-3 block">
+            2. Detalhes da Embarcação
+          </label>
+          <div className="space-y-4">
+            {/* Location */}
+            <div className="flex gap-2">
+              {locations.map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => setSelectedLocation(loc)}
+                  className={`flex-1 border rounded-md px-4 py-2.5 font-body text-sm transition-all duration-200 ${
+                    selectedLocation === loc
+                      ? "border-primary bg-primary/10 text-primary font-semibold"
+                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  {loc}
+                </button>
+              ))}
+            </div>
+
+            {/* Boat size */}
+            <div className="grid grid-cols-2 gap-2">
+              {boatSizeCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setBoatSize(cat.id)}
+                  className={`border rounded-md px-4 py-2.5 font-body text-sm transition-all duration-200 text-left ${
+                    boatSize === cat.id
+                      ? "border-primary bg-primary/10 text-primary font-semibold"
+                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Boat name */}
+            <input
+              type="text"
+              value={boatName}
+              onChange={(e) => setBoatName(e.target.value)}
+              placeholder="Nome da Embarcação (opcional)"
+              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+            />
+          </div>
+        </motion.div>
+
+        <motion.div custom={3} variants={formItemVariant}>
+          <label className="font-body text-sm font-semibold tracking-wide text-gray-700 mb-3 block">
+            3. Os seus Contactos
+          </label>
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="O seu Nome *"
+              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+            />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              placeholder="Contacto Telefónico *"
+              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+            />
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ---- COLUMN 3: CALENDAR & SUBMIT ---- */}
+      <div className="lg:col-span-1 flex flex-col gap-4">
+        <motion.div custom={4} variants={formItemVariant}>
+          <label className="font-body text-sm font-semibold tracking-wide text-gray-700 mb-3 block">
+            4. Data Pretendida *
+          </label>
+          <div className="border border-gray-200 rounded-md p-1 bg-white flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1)) }
+              className="font-body p-2"
+            />
+          </div>
+        </motion.div>
+
+        <motion.div custom={5} variants={formItemVariant} className="mt-auto flex flex-col gap-4">
+          {/* Summary */}
+          {(selectedServices.length > 0 || selectedPack) && (
+            <div className="border border-dashed border-gray-300 rounded-md p-4 bg-gray-50/80">
+              <p className="font-body text-xs uppercase tracking-wider text-gray-500 mb-3">Resumo do Pedido</p>
+              <div className="space-y-1.5">
+                {selectedPack ? (
+                  <p className="font-body text-sm text-gray-700 font-medium">
+                    {packs.find(p => p.id === selectedPack)?.name}
+                  </p>
+                ) : (
+                  selectedServices.map(id => (
+                    <div key={id} className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="text-primary/80">-</span>
+                      <span>{services.find(s => s.id === id)?.name}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitDisabled}
+            className="w-full bg-primary text-primary-foreground font-body uppercase tracking-widest text-sm px-8 py-4 rounded-md transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none disabled:translate-y-0"
+          >
+            Pedir Orçamento
+          </button>
+        </motion.div>
+      </div>
+    </motion.form>
   );
-}
+};

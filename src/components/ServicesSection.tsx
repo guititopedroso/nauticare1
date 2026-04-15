@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { services, categories } from "@/data/services";
+import { useLiveContent } from "@/hooks/useLiveContent";
+import { categories } from "@/data/services";
 
 const ServicesSection = () => {
+  const { services } = useLiveContent();
   const [activeCategory, setActiveCategory] = useState<string>("estetica");
   const navigate = useNavigate();
 

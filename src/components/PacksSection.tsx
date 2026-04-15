@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { packs, services } from "@/data/services";
+import { useLiveContent } from "@/hooks/useLiveContent";
 
 const PacksSection = () => {
+  const { packs, services } = useLiveContent();
   const getServiceName = (id: string) => services.find((s) => s.id === id)?.name || id;
 
   return (

@@ -2,13 +2,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { services, boatSizeCategories } from "@/data/services";
+import { useLiveContent } from "@/hooks/useLiveContent";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import beforeImg from "@/assets/before_demo.png";
+import afterImg from "@/assets/after_demo.png";
 
 const ServiceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { services, boatSizes, loading } = useLiveContent();
   const service = services.find((s) => s.id === id);
 
   useEffect(() => {
@@ -70,13 +74,33 @@ const ServiceDetail = () => {
 
           {/* Detailed description */}
           <motion.p
-            className="font-body text-muted-foreground text-base md:text-lg leading-relaxed mb-16 max-w-3xl"
+            className="font-body text-muted-foreground text-base md:text-lg leading-relaxed mb-12 max-w-3xl"
             initial={{ x: -40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.19, 1, 0.22, 1] }}
           >
             {service.detailedDescription}
           </motion.p>
+
+          {/* Before/After Slider (Demonstration) */}
+          <motion.div
+            className="mb-16"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h2 className="text-xl md:text-2xl font-display text-foreground mb-6 flex items-center gap-3">
+              <span className="w-8 h-px bg-primary"></span>
+              Resultados Reais
+            </h2>
+            <BeforeAfterSlider 
+              beforeImage={service.beforeImageUrl || beforeImg}
+              afterImage={service.afterImageUrl || afterImg}
+            />
+            <p className="mt-4 text-sm text-muted-foreground italic text-center">
+              Deslize a barra para comparar o estado antes e depois da nossa intervenção profissional.
+            </p>
+          </motion.div>
 
           {/* Price table */}
           <motion.div
@@ -96,16 +120,16 @@ const ServiceDetail = () => {
                   Preço
                 </div>
               </div>
-              {boatSizeCategories.map((cat, index) => (
+              {boatSizes.map((cat, index) => (
                 <div
                   key={cat.id}
-                  className={`grid grid-cols-2 ${index < boatSizeCategories.length - 1 ? "border-b border-border" : ""}`}
+                  className={`grid grid-cols-2 ${index < boatSizes.length - 1 ? "border-b border-border" : ""}`}
                 >
                   <div className="px-6 py-5 font-body text-sm text-foreground border-r border-border">
                     {cat.label}
                   </div>
                   <div className="px-6 py-5 font-body text-sm text-primary font-semibold tabular-nums">
-                    {service.prices[cat.id]}
+                    {service.prices?.[cat.id] || "Sob consulta"}
                   </div>
                 </div>
               ))}

@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <img src={logoWhite} alt="Nauticare" className="w-auto h-auto max-w-[180px] mb-4" />
             <p className="font-body text-gray-400 text-sm leading-relaxed max-w-xs">
-              Serviços náuticos personalizados e de elite. Da Marina de Setúbal para as águas da Tróia.
+              Serviços náuticos personalizados e de elite. Da Doca das Fontainhas para as águas da Tróia.
             </p>
           </div>
 

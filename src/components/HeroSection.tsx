@@ -60,7 +60,7 @@ const HeroSection = () => {
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          Serviços náuticos personalizados e de elite. Da Marina de Setúbal para as águas da Tróia.
+          Serviços náuticos personalizados e de elite. Da Doca das Fontainhas para as águas da Tróia.
         </motion.p>
       </div>
     </section>

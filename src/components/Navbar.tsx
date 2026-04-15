@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import logoDark from "@/assets/logo-dark.png";
+import { useAuth } from "@/lib/auth";
 
 interface NavbarProps {
   activeTab: string;
@@ -17,9 +18,21 @@ const tabs = [
 ];
 
 const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
+  const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const dynamicTabs = [
+    ...tabs,
+    { 
+      id: "conta", 
+      label: user ? "A Minha Conta" : "Login", 
+      route: user ? "/area-cliente" : "/login",
+      variant: "secondary"
+    }
+  ];
 
   // Effect to close mobile menu on route change
   useEffect(() => {
@@ -57,26 +70,62 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-1">
-          {tabs.map((tab) => {
+          {dynamicTabs.map((tab) => {
             const isActive = 
               (tab.id === "inicio" && location.pathname === "/") ||
               (tab.id === "sobre" && location.pathname === "/sobre-nos") ||
+              (tab.id === "conta" && (location.pathname === "/login" || location.pathname === "/area-cliente")) ||
               (location.pathname === "/" && activeTab === tab.id && tab.id !== 'inicio' && tab.id !== 'sobre');
+            
             const isHighlight = 'highlight' in tab && tab.highlight;
+            const isSecondary = 'variant' in tab && tab.variant === 'secondary';
+
+            if (tab.id === "conta" && user) {
+                return (
+                    <div key={tab.id} className="relative" onMouseEnter={() => setDropdownOpen(true)} onMouseLeave={() => setDropdownOpen(false)}>
+                        <button
+                            className={`px-5 py-2 font-body text-sm uppercase tracking-widest transition-all border border-primary text-primary rounded-sm ml-2 hover:bg-primary hover:text-white ${isActive ? "bg-primary text-white" : ""}`}
+                        >
+                            {tab.label}
+                        </button>
+                        <AnimatePresence>
+                            {dropdownOpen && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="absolute right-0 mt-1 w-56 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-100 dark:border-gray-700 py-2 z-[60]"
+                                >
+                                    <button onClick={() => navigate('/area-cliente')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-50 dark:border-gray-700">Nauticare Elite</button>
+                                    <button onClick={() => navigate('/perfil/dados')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Dados Pessoais</button>
+                                    <button onClick={() => navigate('/area-cliente')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">As Minhas Reservas</button>
+                                    <button 
+                                        onClick={async () => { await logout(); navigate('/'); }} 
+                                        className="w-full text-left px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-t border-gray-100 dark:border-gray-700 mt-1"
+                                    >Sair</button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                );
+            }
+
             return (
               <button
                 key={tab.id}
-                onClick={() => handleClick(tab)}
-                className={`relative px-5 py-2 font-body text-sm uppercase tracking-widest transition-colors ${
+                onClick={() => handleClick(tab as typeof tabs[0])}
+                className={`relative px-5 py-2 font-body text-sm uppercase tracking-widest transition-all ${
                   isHighlight
                     ? "bg-primary text-primary-foreground rounded-sm ml-2 hover:bg-primary/90"
-                    : isActive
-                      ? "text-primary"
-                      : "text-foreground/60 hover:text-foreground"
+                    : isSecondary
+                      ? "border border-primary text-primary rounded-sm ml-2 hover:bg-primary hover:text-white"
+                      : isActive
+                        ? "text-primary"
+                        : "text-foreground/60 hover:text-foreground"
                 }`}
               >
                 {tab.label}
-                {isActive && !isHighlight && (
+                {isActive && !isHighlight && !isSecondary && (
                   <motion.div
                     layoutId="navbar-indicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
@@ -111,19 +160,41 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
             className="md:hidden bg-background border-b border-border overflow-hidden"
           >
             <div className="flex flex-col py-2">
-              {tabs.map((tab) => {
+              {dynamicTabs.map((tab) => {
                 const isActive = 
                   (tab.id === "inicio" && location.pathname === "/") ||
                   (tab.id === "sobre" && location.pathname === "/sobre-nos") ||
+                  (tab.id === "conta" && (location.pathname === "/login" || location.pathname === "/area-cliente")) ||
                   (location.pathname === "/" && activeTab === tab.id && tab.id !== 'inicio' && tab.id !== 'sobre');
+                
+                const isHighlight = 'highlight' in tab && tab.highlight;
+                const isSecondary = 'variant' in tab && tab.variant === 'secondary';
+
+                if (tab.id === "conta" && user) {
+                  return (
+                    <div key={tab.id} className="flex flex-col bg-gray-50 dark:bg-gray-900/50 my-2 mx-4 rounded-md overflow-hidden border border-primary/10">
+                      <div className="px-6 py-3 bg-primary/10 text-primary font-bold text-sm uppercase tracking-wider border-b border-primary/10">A Minha Conta</div>
+                      <button onClick={() => { setMobileOpen(false); navigate('/area-cliente'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">Nauticare Elite</button>
+                      <button onClick={() => { setMobileOpen(false); navigate('/perfil/dados'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">Dados Pessoais</button>
+                      <button onClick={() => { setMobileOpen(false); navigate('/area-cliente'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">As Minhas Reservas</button>
+                      <button 
+                        onClick={async () => { setMobileOpen(false); await logout(); navigate('/'); }} 
+                        className="px-6 py-4 text-left text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-t border-primary/5"
+                      >Sair</button>
+                    </div>
+                  );
+                }
+
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => handleClick(tab)}
+                    onClick={() => handleClick(tab as typeof tabs[0])}
                     className={`block w-full text-left px-6 py-4 font-body text-base uppercase tracking-wider transition-colors ${
                       isActive ? "text-primary font-semibold" : "text-foreground/70"
                     } ${
-                      tab.highlight ? "bg-primary/10 text-primary font-bold my-1 mx-4 w-auto rounded-md" : ""
+                      isHighlight ? "bg-primary/10 text-primary font-bold my-1 mx-4 w-auto rounded-md" : ""
+                    } ${
+                      isSecondary ? "border-2 border-primary/20 text-primary font-bold my-1 mx-4 w-auto rounded-md px-5" : ""
                     }`}
                   >
                     {tab.label}

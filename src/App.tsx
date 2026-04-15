@@ -8,11 +8,17 @@ import SobreNos from "./pages/SobreNos.tsx";
 import ServiceDetail from "./pages/ServiceDetail.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Admin from "./pages/Admin.tsx";
+import ClientLogin from "./pages/ClientLogin.tsx";
+import ClientProfile from "./pages/ClientProfile.tsx";
+import ClientSettings from "./pages/ClientSettings.tsx";
+import ClientBookings from "./pages/ClientBookings.tsx";
+import { AuthProvider } from "./lib/auth";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  <AuthProvider>
+    <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -22,12 +28,16 @@ const App = () => (
           <Route path="/sobre-nos" element={<SobreNos />} />
           <Route path="/servico/:id" element={<ServiceDetail />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/login" element={<ClientLogin />} />
+          <Route path="/area-cliente" element={<ClientProfile />} />
+          <Route path="/perfil/dados" element={<ClientSettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </AuthProvider>
 );
 
 export default App;

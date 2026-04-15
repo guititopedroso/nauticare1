@@ -41,7 +41,7 @@ const SobreNos = () => {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2, ease: [0.19, 1, 0.22, 1] }}
           >
-            Serviços náuticos personalizados e de elite. Baseados entre a Marina de Setúbal e a Marina de Tróia.
+            Serviços náuticos personalizados e de elite. Baseados entre a Doca das Fontainhas e a Marina de Tróia.
           </motion.p>
           </div>
         </div>
@@ -60,7 +60,7 @@ const SobreNos = () => {
             <p className="font-body text-foreground/80 text-sm md:text-base leading-relaxed tracking-wide">
               A <strong>Nauticare</strong> nasceu da paixão pelo mar e pela exigência de perfeição.
               Somos uma equipa jovem e especializada em detalhe e manutenção náutica, baseada
-              entre a Marina de Setúbal e a Marina de Tróia.
+              entre a Doca das Fontainhas e a Marina de Tróia.
             </p>
             <p className="font-body text-foreground/80 text-sm md:text-base leading-relaxed tracking-wide">
               O nosso objetivo é claro: tratar cada embarcação como se fosse nossa. Combinamos

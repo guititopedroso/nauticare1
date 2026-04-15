@@ -1,15 +1,36 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { services, packs, boatSizeCategories, type BoatSize } from "@/data/services";
+import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
+import emailjs from '@emailjs/browser';
 import { Calendar } from "@/components/ui/calendar";
+import { CustomPhoneInput } from "./PhoneInput";
+import { isValidPhoneNumber } from 'react-phone-number-input';
+import { format } from "date-fns";
+import { useLiveContent } from "@/hooks/useLiveContent";
+import { boatSizeCategories, type BoatSize, categories } from "@/data/services";
 
-const locations = ["Marina de Setúbal", "Marina de Tróia"];
+const locations = ["Doca das Fontainhas", "Marina de Tróia"];
 
-interface BookingFormProps {
-  setSubmitted: (submitted: boolean) => void;
+export interface BookingFormData {
+  date: Date;
+  boatSize: BoatSize | "";
+  services: string[];
+  name: string;
+  email: string;
+  phone: string;
+  boatName: string;
+  marina: string;
+  observations: string;
 }
 
-export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
+interface BookingFormProps {
+  setSubmitted?: (submitted: boolean) => void;
+  onSubmit?: (data: BookingFormData) => void;
+}
+
+export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
+  const { services, packs, boatSizes } = useLiveContent();
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPack, setSelectedPack] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -17,7 +38,9 @@ export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
   const [boatName, setBoatName] = useState("");
   const [boatSize, setBoatSize] = useState<BoatSize | "">("");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("+351");
+  const [observations, setObservations] = useState("");
 
   const toggleService = (id: string) => {
     setSelectedServices((prev) =>
@@ -33,11 +56,91 @@ export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((selectedServices.length === 0 && !selectedPack) || !name || !phone || !selectedDate) {
+    if ((selectedServices.length === 0 && !selectedPack) || !name || !email || !phone || !selectedDate) {
         alert("Por favor, preencha todos os campos obrigatórios.");
         return;
+    }
+
+    // Validation for Portuguese numbers (starts with +351)
+    if (phone && phone.startsWith('+351')) {
+      const digitsOnly = phone.replace(/\D/g, '');
+      if (digitsOnly.length !== 12) { // 351 + 9 digits = 12
+        alert("O número de telemóvel deve ter exatamente 9 dígitos.");
+        return;
+      }
+    } else if (phone && !isValidPhoneNumber(phone)) {
+        alert("Por favor, insira um número de telefone válido.");
+        return;
+    }
+
+    const formData: BookingFormData = {
+      date: selectedDate,
+      boatSize,
+      services: selectedPack ? [selectedPack] : selectedServices,
+      name,
+      email,
+      phone,
+      boatName,
+      marina: selectedLocation,
+      observations,
     };
-    setSubmitted(true);
+
+    if (onSubmit) {
+      onSubmit(formData);
+    } else if (setSubmitted) {
+      // Guest submission to Firebase
+      const saveGuestBooking = async () => {
+        try {
+          await addDoc(collection(db, 'bookings'), {
+            date: format(selectedDate, "yyyy-MM-dd"),
+            boat_size: boatSize,
+            services: selectedPack ? [selectedPack] : selectedServices,
+            name,
+            email,
+            phone,
+            boat_name: boatName,
+            marina: selectedLocation,
+            observations,
+            is_confirmed: false,
+            created_at: new Date().toISOString()
+          });
+
+          // EmailJS Integration
+          const templateParams = {
+            user_name: name,
+            user_email: email,
+            user_phone: phone,
+            date: format(selectedDate, "dd/MM/yyyy"),
+            boat_name: boatName || "N/A",
+            boat_size: boatSizes.find(c => c.id === boatSize)?.label || boatSize || "N/A",
+            location: selectedLocation || "N/A",
+            services_or_pack: selectedPack 
+              ? (packs.find(p => p.id === selectedPack)?.name || selectedPack) 
+              : selectedServices.map(id => services.find(s => s.id === id)?.name || id).join(', '),
+          };
+
+          // Also set to_email for the recipient if configured in EmailJS settings
+          // (assuming user_email is the client email)
+          const finalParams = {
+            ...templateParams,
+            to_email: email, // Keep this just in case for the "To Email" field
+          };
+
+          await emailjs.send(
+            import.meta.env.VITE_EMAILJS_SERVICE_ID,
+            import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+            finalParams,
+            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+          );
+
+          setSubmitted(true);
+        } catch (err: any) {
+          console.error("Error saving booking:", err);
+          alert(`Erro detalhado: ${err.text || err.message || JSON.stringify(err)}`);
+        }
+      };
+      saveGuestBooking();
+    }
   };
 
   const isSubmitDisabled = (selectedServices.length === 0 && !selectedPack) || !name || !phone || !selectedDate;
@@ -54,7 +157,7 @@ export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
   return (
     <motion.form 
       onSubmit={handleSubmit} 
-      className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8 bg-white p-6 md:p-10 rounded-lg shadow-xl shadow-black/5"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 bg-white p-4 md:p-8 rounded-lg"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
@@ -163,22 +266,24 @@ export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
             </div>
 
             {/* Boat size */}
-            <div className="grid grid-cols-2 gap-2">
-              {boatSizeCategories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setBoatSize(cat.id)}
-                  className={`border rounded-md px-4 py-2.5 font-body text-sm transition-all duration-200 text-left ${
-                    boatSize === cat.id
-                      ? "border-primary bg-primary/10 text-primary font-semibold"
-                      : "border-gray-300 text-gray-600 hover:border-gray-400"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {boatSizes.map((size) => (
+              <button
+                key={size.id}
+                type="button"
+                onClick={() => setBoatSize(size.id)}
+                className={`flex flex-col items-center justify-center p-3 sm:p-5 min-h-[70px] rounded-md border-2 transition-all duration-200 text-center ${
+                  boatSize === size.id
+                    ? "border-primary bg-primary text-primary-foreground shadow-md"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-primary/50"
+                }`}
+              >
+                <span className="font-display font-bold text-sm sm:text-lg leading-tight">
+                  {size.label}
+                </span>
+              </button>
+            ))}
+          </div>
 
             {/* Boat name */}
             <input
@@ -205,12 +310,24 @@ export const BookingForm = ({ setSubmitted }: BookingFormProps) => {
               className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
             />
             <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              placeholder="Contacto Telefónico *"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="O seu Email *"
               className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+            />
+            <CustomPhoneInput
+              value={phone}
+              onChange={setPhone}
+              placeholder="Contacto Telefónico *"
+              className="bg-white"
+            />
+             <textarea
+              value={observations}
+              onChange={(e) => setObservations(e.target.value)}
+              placeholder="Observações (opcional)"
+              rows={3}
+              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none"
             />
           </div>
         </motion.div>

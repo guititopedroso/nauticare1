@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import emailjs from '@emailjs/browser';
 import { Calendar } from "@/components/ui/calendar";
 import { CustomPhoneInput } from "./PhoneInput";
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import { format } from "date-fns";
 import { useLiveContent } from "@/hooks/useLiveContent";
+import { useAuth } from "@/lib/auth";
 import { boatSizeCategories, type BoatSize, categories } from "@/data/services";
 
 const locations = ["Doca das Fontainhas", "Marina de Tróia"];
@@ -30,12 +31,15 @@ interface BookingFormProps {
 }
 
 export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
+  const { user } = useAuth();
   const { services, packs, boatSizes } = useLiveContent();
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPack, setSelectedPack] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedLocation, setSelectedLocation] = useState("");
   const [boatName, setBoatName] = useState("");
+  const [userBoats, setUserBoats] = useState<string[]>([]);
+  const [isManualBoat, setIsManualBoat] = useState(false);
   const [boatSize, setBoatSize] = useState<BoatSize | "">("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -53,6 +57,39 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
     setSelectedPack(id === selectedPack ? "" : id);
     if (id !== selectedPack) setSelectedServices([]);
   };
+
+  useEffect(() => {
+    if (user && user.email) {
+      setEmail(user.email.toLowerCase());
+      
+      // Fetch additional profile info
+      const fetchProfile = async () => {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.name) setName(data.name);
+            if (data.phone) setPhone(data.phone);
+            
+            // Handle boats (migration or array)
+            if (data.boats && data.boats.length > 0) {
+               setUserBoats(data.boats.filter(Boolean));
+               setBoatName(data.boats[0]);
+               setIsManualBoat(false);
+            } else if (data.boatName) {
+               setUserBoats([data.boatName]);
+               setBoatName(data.boatName);
+               setIsManualBoat(false);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching profile for pre-fill:", err);
+        }
+      };
+      
+      fetchProfile();
+    }
+  }, [user]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,12 +128,14 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
       // Guest submission to Firebase
       const saveGuestBooking = async () => {
         try {
+          const cleanEmail = email.toLowerCase().trim();
+          
           await addDoc(collection(db, 'bookings'), {
             date: format(selectedDate, "yyyy-MM-dd"),
             boat_size: boatSize,
             services: selectedPack ? [selectedPack] : selectedServices,
             name,
-            email,
+            email: cleanEmail,
             phone,
             boat_name: boatName,
             marina: selectedLocation,
@@ -285,14 +324,47 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
             ))}
           </div>
 
-            {/* Boat name */}
-            <input
-              type="text"
-              value={boatName}
-              onChange={(e) => setBoatName(e.target.value)}
-              placeholder="Nome da Embarcação (opcional)"
-              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-            />
+            {/* Boat name selector */}
+            {!isManualBoat && userBoats.length > 0 ? (
+              <div className="space-y-3">
+                <select
+                  value={boatName}
+                  onChange={(e) => {
+                    if (e.target.value === "NEW_BOAT") {
+                      setIsManualBoat(true);
+                      setBoatName("");
+                    } else {
+                      setBoatName(e.target.value);
+                    }
+                  }}
+                  className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                >
+                  {userBoats.map((boat, idx) => (
+                    <option key={idx} value={boat}>{boat}</option>
+                  ))}
+                  <option value="NEW_BOAT">+ Outra embarcação...</option>
+                </select>
+              </div>
+            ) : (
+              <div className="relative">
+                <input
+                  type="text"
+                  value={boatName}
+                  onChange={(e) => setBoatName(e.target.value)}
+                  placeholder="Nome da Embarcação (opcional)"
+                  className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                />
+                {userBoats.length > 0 && (
+                  <button 
+                    type="button"
+                    onClick={() => { setIsManualBoat(false); setBoatName(userBoats[0]); }}
+                    className="absolute right-3 top-2.5 text-[10px] font-bold text-primary uppercase hover:underline"
+                  >
+                    Ver as minhas
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </motion.div>
 

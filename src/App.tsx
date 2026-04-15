@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/login" element={<ClientLogin />} />
           <Route path="/area-cliente" element={<ClientProfile />} />
           <Route path="/perfil/dados" element={<ClientSettings />} />
+          <Route path="/perfil/reservas" element={<ClientBookings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

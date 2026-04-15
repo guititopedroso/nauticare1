@@ -127,7 +127,7 @@ export default function Admin() {
       unsubPacks = onSnapshot(collection(db, 'packs'), (snap) => {
         setLivePacks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       });
-      unsubSizes = onSnapshot(collection(db, 'boatSizes'), (snap) => {
+      unsubSizes = onSnapshot(collection(db, 'boat_sizes'), (snap) => {
         setLiveBoatSizes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       });
     }

@@ -98,7 +98,7 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
                                 >
                                     <button onClick={() => navigate('/area-cliente')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-50 dark:border-gray-700">Nauticare Elite</button>
                                     <button onClick={() => navigate('/perfil/dados')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Dados Pessoais</button>
-                                    <button onClick={() => navigate('/area-cliente')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">As Minhas Reservas</button>
+                                    <button onClick={() => navigate('/perfil/reservas')} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">As Minhas Reservas</button>
                                     <button 
                                         onClick={async () => { await logout(); navigate('/'); }} 
                                         className="w-full text-left px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-t border-gray-100 dark:border-gray-700 mt-1"
@@ -176,7 +176,7 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
                       <div className="px-6 py-3 bg-primary/10 text-primary font-bold text-sm uppercase tracking-wider border-b border-primary/10">A Minha Conta</div>
                       <button onClick={() => { setMobileOpen(false); navigate('/area-cliente'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">Nauticare Elite</button>
                       <button onClick={() => { setMobileOpen(false); navigate('/perfil/dados'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">Dados Pessoais</button>
-                      <button onClick={() => { setMobileOpen(false); navigate('/area-cliente'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">As Minhas Reservas</button>
+                      <button onClick={() => { setMobileOpen(false); navigate('/perfil/reservas'); }} className="px-6 py-4 text-left text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-colors">As Minhas Reservas</button>
                       <button 
                         onClick={async () => { setMobileOpen(false); await logout(); navigate('/'); }} 
                         className="px-6 py-4 text-left text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-t border-primary/5"

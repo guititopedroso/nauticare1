@@ -32,8 +32,7 @@ export default function ClientBookings() {
 
     const q = query(
       collection(db, 'bookings'),
-      where('email', '==', user.email),
-      orderBy('date', 'desc')
+      where('email', '==', user.email)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -41,7 +40,14 @@ export default function ClientBookings() {
         id: doc.id,
         ...doc.data()
       })) as Booking[];
-      setBookings(bks);
+      
+      // Sort in memory instead of relying on Firestore index
+      const sortedBks = bks.sort((a, b) => b.date.localeCompare(a.date));
+      
+      setBookings(sortedBks);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching bookings:", error);
       setLoading(false);
     });
 

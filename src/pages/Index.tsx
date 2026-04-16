@@ -5,6 +5,7 @@ import HeroSection from "@/components/HeroSection";
 import ServicesSection from "@/components/ServicesSection";
 import PacksSection from "@/components/PacksSection";
 import BookingSection from "@/components/BookingSection";
+import ElitePromo from "@/components/ElitePromo";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -76,6 +77,7 @@ const Index = () => {
       <div ref={packsRef}>
         <PacksSection />
       </div>
+      <ElitePromo />
       <div ref={reservarRef}>
         <BookingSection />
       </div>

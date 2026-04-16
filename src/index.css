@@ -43,7 +43,7 @@
     --input: 214 32% 91%;
     --ring: 220 100% 50%;
 
-    --radius: 0.25rem;
+    --radius: 1.5rem;
 
     --surface-dark: 222 84% 5%;
     --surface-dark-foreground: 0 0% 100%;
@@ -69,17 +69,34 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased selection:bg-primary/20;
   }
 
   h1, h2, h3 {
     @apply font-display font-bold uppercase tracking-tight;
+  }
+
+  /* Smooth scroll for the entire site */
+  html {
+    scroll-behavior: smooth;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  .glass {
+    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl;
+  }
+
+  .premium-shadow {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  }
+
+  .hover-lift {
+    @apply hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out;
   }
 }
 

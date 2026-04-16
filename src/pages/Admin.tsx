@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingForm, BookingFormData } from "@/components/BookingForm";
+import { TransferBookingForm } from "@/components/TransferBookingForm";
 import { services, packs, boatSizeCategories } from "@/data/services";
 import { db, storage } from "@/lib/firebase";
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy, Timestamp, setDoc, onSnapshot } from "firebase/firestore";
@@ -18,15 +19,18 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface Booking {
     id: string;
+    type?: 'transfer';
     created_at: string;
     date: string;
     boat_size: string;
-    services: string[];
+    services?: string[];
+    origin?: string;
+    destination?: string;
     name: string;
     email: string;
     phone: string;
     boat_name: string;
-    marina: string;
+    marina?: string;
     observations?: string;
     is_confirmed: boolean;
 }
@@ -39,6 +43,7 @@ export default function Admin() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(new Date());
   const [isBookingFormOpen, setBookingFormOpen] = useState(false);
+  const [isTransferFormOpen, setTransferFormOpen] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
@@ -305,12 +310,26 @@ export default function Admin() {
         boat_name: boatName,
         marina,
         observations,
-        is_confirmed: false,
+        is_confirmed: true,
         created_at: new Date().toISOString()
       });
       setBookingFormOpen(false);
     } catch (err) {
       console.error('Error inserting booking:', err);
+    }
+  };
+
+  const handleTransferSubmit = async (data: TransferBookingData) => {
+    try {
+      await addDoc(collection(db, 'bookings'), {
+        ...data,
+        date: format(data.date, "yyyy-MM-dd"),
+        is_confirmed: true,
+        created_at: new Date().toISOString()
+      });
+      setTransferFormOpen(false);
+    } catch (err) {
+      console.error('Error inserting transfer:', err);
     }
   };
 
@@ -375,7 +394,10 @@ export default function Admin() {
                         >
                             Sair
                         </Button>
-                        <Button onClick={() => setBookingFormOpen(true)}>Adicionar reserva manualmente</Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setTransferFormOpen(true)}>Adicionar Transfer</Button>
+                            <Button onClick={() => setBookingFormOpen(true)}>Adicionar reserva</Button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -849,7 +871,16 @@ export default function Admin() {
                     <DialogHeader>
                         <DialogTitle>Adicionar reserva manualmente</DialogTitle>
                     </DialogHeader>
-                    <BookingForm onSubmit={handleBookingSubmit} />
+                    <BookingForm onSubmit={handleBookingSubmit} isAdmin={true} />
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isTransferFormOpen} onOpenChange={setTransferFormOpen}>
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[90vw] lg:max-w-6xl">
+                    <DialogHeader>
+                        <DialogTitle>Adicionar Transfer manualmente</DialogTitle>
+                    </DialogHeader>
+                    <TransferBookingForm onSubmit={handleTransferSubmit} isAdmin={true} />
                 </DialogContent>
             </Dialog>
     
@@ -859,22 +890,34 @@ export default function Admin() {
                         <DialogTitle>{selectedBooking?.boat_name}</DialogTitle>
                     </DialogHeader>
                     <div className="py-4 space-y-2">
+                        <p><b>Tipo:</b> {selectedBooking?.type === 'transfer' ? <span className="text-blue-600 font-bold uppercase text-[10px] bg-blue-50 px-2 py-1 rounded-full">Transfer</span> : 'Serviço Normal'}</p>
                         <p><b>Cliente:</b> {selectedBooking?.name}</p>
                         <p><b>Email:</b> {selectedBooking?.email}</p>
                         <p><b>Telefone:</b> {selectedBooking?.phone}</p>
                         <p><b>Tamanho do Barco:</b> {liveBoatSizes.find(c => c.id === selectedBooking?.boat_size)?.label || selectedBooking?.boat_size}</p>
-                        <p><b>Porto:</b> {selectedBooking?.marina}</p>
-                        <p><b>Serviços:</b> {selectedBooking?.services && selectedBooking.services.length > 0 
-                            ? selectedBooking.services.map(id => {
-                                const pack = packs.find(p => p.id === id);
-                                if (pack) return pack.name;
-                                const service = services.find(s => s.id === id);
-                                if (service) return service.name;
-                                return id;
-                            }).join(', ') 
-                            : 'Nenhum'}</p>
+                        
+                        {selectedBooking?.type === 'transfer' ? (
+                            <>
+                                <p className="text-blue-700"><b>Origem:</b> {selectedBooking?.origin}</p>
+                                <p className="text-blue-700"><b>Destino:</b> {selectedBooking?.destination}</p>
+                            </>
+                        ) : (
+                            <p><b>Porto:</b> {selectedBooking?.marina}</p>
+                        )}
+
+                        {selectedBooking?.type !== 'transfer' && (
+                            <p><b>Serviços:</b> {selectedBooking?.services && selectedBooking.services.length > 0 
+                                ? selectedBooking.services.map(id => {
+                                    const pack = packs.find(p => p.id === id);
+                                    if (pack) return pack.name;
+                                    const service = services.find(s => s.id === id);
+                                    if (service) return service.name;
+                                    return id;
+                                }).join(', ') 
+                                : 'Nenhum'}</p>
+                        )}
                         {selectedBooking?.observations && <p><b>Observações:</b> {selectedBooking?.observations}</p>}
-                        <p><b>Estado:</b> {selectedBooking?.is_confirmed ? "Confirmada" : "Por confirmar"}</p>
+                        <p><b>Estado:</b> {selectedBooking?.is_confirmed ? <span className="text-green-600 font-bold">Confirmada</span> : <span className="text-orange-600 font-bold">Por confirmar</span>}</p>
                     </div>
                     <DialogFooter>
                         {!selectedBooking?.is_confirmed && (

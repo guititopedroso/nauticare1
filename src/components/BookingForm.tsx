@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { Calendar as CalendarIcon, Clock, Ship, ChevronRight, CheckCircle2, ChevronDown } from "lucide-react";
 import emailjs from '@emailjs/browser';
 import { Calendar } from "@/components/ui/calendar";
 import { CustomPhoneInput } from "./PhoneInput";
@@ -29,12 +30,14 @@ export interface BookingFormData {
 interface BookingFormProps {
   setSubmitted?: (submitted: boolean) => void;
   onSubmit?: (data: BookingFormData) => void;
+  isAdmin?: boolean;
 }
 
-export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
+export const BookingForm = ({ setSubmitted, onSubmit, isAdmin }: BookingFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { services, packs, boatSizes } = useLiveContent();
+  const [submitting, setSubmitting] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPack, setSelectedPack] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -93,8 +96,10 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
     }
   }, [user]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+
     if ((selectedServices.length === 0 && !selectedPack) || !name || !email || !phone || !selectedDate) {
         toast({
           title: "Campos em falta",
@@ -141,6 +146,7 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
     } else if (setSubmitted) {
       // Guest submission to Firebase
       const saveGuestBooking = async () => {
+        setSubmitting(true);
         try {
           const cleanEmail = email.toLowerCase().trim();
           
@@ -194,6 +200,8 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
             description: "Não foi possível completar a sua reserva. Por favor, tente novamente.",
             variant: "destructive"
           });
+        } finally {
+            setSubmitting(false);
         }
       };
       saveGuestBooking();
@@ -230,10 +238,10 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
             {services.map((service) => (
               <label
                 key={service.id}
-                className={`flex items-center gap-3 border rounded-md px-4 py-3 cursor-pointer transition-all duration-200 ${
+                className={`flex items-center gap-3 border-2 rounded-md px-4 py-3 cursor-pointer transition-all duration-200 ${
                   selectedServices.includes(service.id)
-                    ? "border-primary bg-primary/10 ring-2 ring-primary/50"
-                    : "border-gray-200 hover:border-gray-400"
+                    ? "border-primary bg-primary/10"
+                    : "border-gray-200 bg-white hover:border-primary/50"
                 }`}
               >
                 <input
@@ -268,10 +276,10 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
             {packs.map((pack) => (
               <label
                 key={pack.id}
-                className={`flex items-center gap-3 border rounded-md px-4 py-3 cursor-pointer transition-all duration-200 ${
+                className={`flex items-center gap-3 border-2 rounded-md px-4 py-3 cursor-pointer transition-all duration-200 ${
                   selectedPack === pack.id
-                    ? "border-primary bg-primary/10 ring-2 ring-primary/50"
-                    : "border-gray-200 hover:border-gray-400"
+                    ? "border-primary bg-primary/10"
+                    : "border-gray-200 bg-white hover:border-primary/50"
                 }`}
               >
                 <input
@@ -310,11 +318,11 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
                 <button
                   key={loc}
                   type="button"
-                  onClick={() => setSelectedLocation(loc)}
-                  className={`flex-1 border rounded-md px-4 py-2.5 font-body text-sm transition-all duration-200 ${
+                  onClick={() => setSelectedLocation(selectedLocation === loc ? "" : loc)}
+                  className={`flex-1 border-2 rounded-md px-4 py-2.5 font-body text-sm transition-all duration-200 ${
                     selectedLocation === loc
-                      ? "border-primary bg-primary/10 text-primary font-semibold"
-                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                      ? "border-primary bg-primary text-white shadow-md font-bold"
+                      : "border-gray-300 text-gray-600 hover:border-primary/50 bg-white"
                   }`}
                 >
                   {loc}
@@ -328,7 +336,7 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
               <button
                 key={size.id}
                 type="button"
-                onClick={() => setBoatSize(size.id)}
+                onClick={() => setBoatSize(boatSize === size.id ? "" : size.id)}
                 className={`flex flex-col items-center justify-center p-3 sm:p-5 min-h-[70px] rounded-md border-2 transition-all duration-200 text-center ${
                   boatSize === size.id
                     ? "border-primary bg-primary text-primary-foreground shadow-md"
@@ -342,47 +350,50 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
             ))}
           </div>
 
-            {/* Boat name selector */}
-            {!isManualBoat && userBoats.length > 0 ? (
-              <div className="space-y-3">
-                <select
-                  value={boatName}
-                  onChange={(e) => {
-                    if (e.target.value === "NEW_BOAT") {
-                      setIsManualBoat(true);
-                      setBoatName("");
-                    } else {
-                      setBoatName(e.target.value);
-                    }
-                  }}
-                  className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                >
-                  {userBoats.map((boat, idx) => (
-                    <option key={idx} value={boat}>{boat}</option>
-                  ))}
-                  <option value="NEW_BOAT">+ Outra embarcação...</option>
-                </select>
-              </div>
-            ) : (
-              <div className="relative">
-                <input
-                  type="text"
-                  value={boatName}
-                  onChange={(e) => setBoatName(e.target.value)}
-                  placeholder="Nome da Embarcação (opcional)"
-                  className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-                />
-                {userBoats.length > 0 && (
-                  <button 
-                    type="button"
-                    onClick={() => { setIsManualBoat(false); setBoatName(userBoats[0]); }}
-                    className="absolute right-3 top-2.5 text-[10px] font-bold text-primary uppercase hover:underline"
+            {/* Boat name selector - Wrapped in space-y-2 for better separation from sizes */}
+            <div className="space-y-2 pt-2">
+              {!isManualBoat && userBoats.length > 0 ? (
+                <div className="space-y-2">
+                  <select
+                    value={boatName}
+                    onChange={(e) => {
+                      if (e.target.value === "NEW_BOAT") {
+                        setIsManualBoat(true);
+                        setBoatName("");
+                      } else {
+                        setBoatName(e.target.value);
+                      }
+                    }}
+                    className="w-full bg-white border-2 border-gray-300 rounded-xl px-4 py-3 font-body text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   >
-                    Ver as minhas
-                  </button>
-                )}
-              </div>
-            )}
+                    {userBoats.map((boat, idx) => (
+                      <option key={idx} value={boat}>{boat}</option>
+                    ))}
+                    <option value="NEW_BOAT">+ Outra embarcação...</option>
+                  </select>
+                </div>
+              ) : (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={boatName}
+                    onChange={(e) => setBoatName(e.target.value)}
+                    placeholder="Nome da Embarcação (opcional)"
+                    className={`w-full bg-white border-2 border-gray-300 rounded-xl py-3 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all ${userBoats.length > 0 ? 'pl-4 pr-12' : 'px-4'}`}
+                  />
+                  {userBoats.length > 0 && (
+                    <button 
+                      type="button"
+                      onClick={() => { setIsManualBoat(false); setBoatName(userBoats[0]); }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary hover:bg-primary/5 rounded-full transition-colors flex items-center justify-center"
+                      title="Voltar à seleção"
+                    >
+                      <ChevronDown className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </motion.div>
 
@@ -397,14 +408,14 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="O seu Nome *"
-              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+              className="w-full bg-white border-2 border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
             />
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="O seu Email *"
-              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+              className="w-full bg-white border-2 border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
             />
             <CustomPhoneInput
               value={phone}
@@ -417,7 +428,7 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
               onChange={(e) => setObservations(e.target.value)}
               placeholder="Observações (opcional)"
               rows={3}
-              className="w-full bg-white border border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none"
+              className="w-full bg-white border-2 border-gray-300 rounded-md px-4 py-2.5 font-body text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none"
             />
           </div>
         </motion.div>
@@ -429,7 +440,7 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
           <label className="font-body text-sm font-semibold tracking-wide text-gray-700 mb-3 block">
             4. Data Pretendida *
           </label>
-          <div className="border border-gray-200 rounded-md p-1 bg-white flex justify-center">
+          <div className="border-2 border-gray-200 rounded-md p-1 bg-white flex justify-center">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -464,10 +475,25 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
 
           <button
             type="submit"
-            disabled={isSubmitDisabled}
-            className="w-full bg-primary text-primary-foreground font-body uppercase tracking-widest text-sm px-8 py-4 rounded-md transition-all duration-300 shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none disabled:shadow-none disabled:translate-y-0"
+            disabled={isSubmitDisabled || submitting}
+            className={`w-full py-5 rounded-full font-display text-sm uppercase tracking-[0.2em] font-bold transition-all duration-500 relative overflow-hidden group ${
+              isSubmitDisabled || submitting
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+                : "bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] shadow-2xl shadow-primary/20 active:scale-[0.98]"
+            }`}
           >
-            Pedir Orçamento
+            <div className="flex items-center justify-center gap-3">
+              {submitting ? (
+                <>
+                  <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>A Processar...</span>
+                </>
+              ) : (
+                <>
+                  <span>{isAdmin ? "Confirmar e Agendar" : "Pedir Orçamento Grátis"}</span>
+                </>
+              )}
+            </div>
           </button>
         </motion.div>
       </div>

@@ -32,6 +32,15 @@ const Footer = () => {
               </a>
             </div>
           </div>
+
+          {/* New column for links */}
+          <div>
+            <h4 className="font-display text-base tracking-widest uppercase text-white mb-4">Mais</h4>
+            <div className="space-y-2 font-body text-sm text-gray-400">
+              <a href="/transferes" className="block hover:text-primary transition-colors">Serviço de Transferes</a>
+              <a href="/sobre-nos" className="block hover:text-primary transition-colors">Quem Somos</a>
+            </div>
+          </div>
         </div>
 
         {/* Copyright notice */}

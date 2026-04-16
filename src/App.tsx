@@ -12,6 +12,8 @@ import ClientLogin from "./pages/ClientLogin.tsx";
 import ClientProfile from "./pages/ClientProfile.tsx";
 import ClientSettings from "./pages/ClientSettings.tsx";
 import ClientBookings from "./pages/ClientBookings.tsx";
+import Transfers from "./pages/Transfers.tsx";
+import TransferQuote from "./pages/TransferQuote.tsx";
 import { AuthProvider } from "./lib/auth";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/area-cliente" element={<ClientProfile />} />
           <Route path="/perfil/dados" element={<ClientSettings />} />
           <Route path="/perfil/reservas" element={<ClientBookings />} />
+          <Route path="/transferes" element={<Transfers />} />
+          <Route path="/pedir-orcamento-transferes" element={<TransferQuote />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -77,76 +77,98 @@ export default function ClientProfile() {
           <Button variant="outline" size="sm" onClick={() => logout()} className="flex items-center gap-2">
             <LogOut className="w-4 h-4" /> Sair
           </Button>
-        </div>
-
-        {/* Loyalty Card Container */}
+        </div>        {/* Premium Loyalty Card */}
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-2xl border border-gray-100 dark:border-gray-700 relative overflow-hidden"
+          transition={{ duration: 0.6 }}
+          className="relative group h-full"
         >
           {/* Card background effect */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="absolute inset-0 bg-slate-900 rounded-[3rem] shadow-3xl overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -mr-20 -mt-20 blur-[100px] transition-all group-hover:bg-primary/30" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full -ml-20 -mb-20 blur-[100px]" />
+          </div>
           
-          <div className="relative z-10">
-            <div className="flex justify-between items-center mb-10">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                  <Star className="w-6 h-6 fill-primary" />
+          <div className="relative z-10 bg-slate-900/40 backdrop-blur-xl p-8 md:p-12 rounded-[3rem] border border-white/10 text-white min-h-[400px] flex flex-col">
+            <div className="flex justify-between items-start mb-12">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/40">
+                  <Star className="w-8 h-8 text-white fill-white/20" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-xl uppercase tracking-wider">Cartão Fidelidade</h3>
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest">Nauticare Elite</p>
+                  <h3 className="font-display font-bold text-2xl tracking-wide uppercase">Nauticare Elite</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <p className="text-[10px] opacity-60 uppercase tracking-[0.2em] font-bold">Membro Ativo</p>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-4xl font-display font-bold text-primary">{profile?.points || 0}</span>
-                <span className="text-muted-foreground text-sm ml-1">/ {POINTS_NEEDED}</span>
+              <div className="text-right flex flex-col items-end">
+                <span className="text-[10px] opacity-40 uppercase tracking-[0.2em] font-bold mb-1">Membro Desde</span>
+                <span className="font-display font-bold text-xl">{profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024'}</span>
               </div>
             </div>
-
-            {/* Grid of Points */}
-            <div className="grid grid-cols-5 gap-3 md:gap-6">
-              {[...Array(POINTS_NEEDED)].map((_, i) => {
-                const isEarned = (profile?.points || 0) > i;
-                const isNext = (profile?.points || 0) === i;
-                
-                return (
-                  <motion.div 
-                    key={i}
-                    whileHover={{ scale: 1.05 }}
-                    className={`aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 border-2 ${
-                      isEarned 
-                        ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20' 
-                        : isNext
-                          ? 'bg-white dark:bg-gray-800 border-primary border-dashed animate-pulse'
-                          : 'bg-gray-50 dark:bg-gray-700/50 border-gray-100 dark:border-gray-600'
-                    }`}
-                  >
-                    {isEarned ? (
-                      <Check className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
-                    ) : (
-                      <span className={`text-lg font-bold ${isNext ? 'text-primary' : 'text-gray-300 dark:text-gray-600'}`}>
-                        {i + 1}
-                      </span>
-                    )}
-                  </motion.div>
-                );
-              })}
+            
+            <div className="flex-1 flex flex-col justify-center mb-12">
+              <div className="mb-2 flex items-baseline gap-2">
+                <span className="text-sm opacity-60 font-body">Balanço de Pontos</span>
+                <div className="h-px flex-1 bg-white/5 mx-2" />
+              </div>
+              <div className="flex items-baseline gap-3">
+                <h3 className="text-6xl md:text-7xl font-display font-bold tracking-tight text-white">
+                  {profile?.points || 0}
+                </h3>
+                <span className="text-xl font-normal opacity-40 italic">serviços realizados</span>
+              </div>
             </div>
-
-            <div className="mt-12 p-6 bg-primary/5 rounded-2xl border border-primary/10">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm text-primary">
-                  🎁
+            
+            <div className="space-y-6">
+              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-2">
+                  <span className="opacity-60">Status:</span>
+                  <span className="text-primary">{profile?.points >= 10 ? 'Gold Member' : 'Standard'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="opacity-60">Próxima Recompensa:</span>
+                  <span className="text-primary">{Math.max(0, 10 - (profile?.points || 0))} serviços</span>
+                </div>
+              </div>
+              <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                <motion.div 
+                  className="h-full bg-gradient-to-r from-primary to-blue-500 shadow-[0_0_20px_rgba(30,58,138,0.5)]" 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, ((profile?.points || 0) / 10) * 100)}%` }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                />
+              </div>
+              <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
+                <span>Progresso do Nível</span>
+                <span>{Math.round(Math.min(100, ((profile?.points || 0) / 10) * 100))}%</span>
+              </div>
+            </div>
+            
+            <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/50 transition-colors">
+                  <Check className={`w-5 h-5 ${profile?.points >= 10 ? 'text-green-400' : 'text-primary'}`} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">Prémio: Próximo Nível</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed mt-1">
-                    Complete 10 serviços para ganhar uma **Lavagem Premium Grátis** ou 50% de desconto num polimento.
+                  <p className="text-sm font-bold">Oferta Disponível</p>
+                  <p className="text-[10px] text-primary font-bold uppercase tracking-widest">
+                    {profile?.points >= 10 ? 'LAVAGEM PREMIUM GRÁTIS' : 'LAVAGEM PREMIUM (BLOQUEADO)'}
                   </p>
                 </div>
               </div>
+              
+              {profile?.points >= 10 && (
+                <Button 
+                  className="bg-primary text-white hover:bg-white hover:text-slate-900 transition-all rounded-xl font-bold uppercase tracking-widest text-[10px] py-6 px-8"
+                  onClick={() => navigate('/#reservar')}
+                >
+                  Resgatar Agora
+                </Button>
+              )}
             </div>
           </div>
         </motion.div>

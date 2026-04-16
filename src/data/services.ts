@@ -135,6 +135,15 @@ export const services: Service[] = [
     price: "A partir de —€",
     prices: { ate7m: "—€", "7a12m": "—€", "12a18m": "—€", mais18m: "Sob consulta" },
   },
+  {
+    id: "transferes",
+    name: "Serviço de Transferes",
+    category: "gestao",
+    description: "Transporte profissional da sua embarcação para oficinas ou outras marinas.",
+    detailedDescription: "Serviço profissional de transporte e movimentação de embarcações. Quer precise de levar o barco à oficina para manutenção, mudar de marina ou entregar a embarcação num local específico, a nossa equipa de skippers experientes garante um transporte seguro e eficiente. Tratamos de toda a logística, para que não tenha de se preocupar com nada.",
+    price: "Sob consulta",
+    prices: { ate7m: "Sob consulta", "7a12m": "Sob consulta", "12a18m": "Sob consulta", mais18m: "Sob consulta" },
+  },
 ];
 
 export const packs: Pack[] = [

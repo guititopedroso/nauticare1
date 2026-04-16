@@ -47,7 +47,7 @@ const BookingSection = () => {
                 className="text-3xl sm:text-4xl md:text-5xl font-display text-foreground mb-3 md:mb-4"
                 initial={{ y: -30, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
+                viewport={{ once: false, amount: 0.1 }}
                 transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
             >
                 Peça o seu Orçamento
@@ -56,7 +56,7 @@ const BookingSection = () => {
                 className="font-body text-muted-foreground text-base md:text-lg max-w-2xl mx-auto tracking-wide"
                 initial={{ y: -30, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
+                viewport={{ once: false, amount: 0.1 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: [0.19, 1, 0.22, 1] }}
             >
                 Selecione os serviços ou pack desejado, preencha os seus dados e nós entramos em contacto para finalizar o agendamento.

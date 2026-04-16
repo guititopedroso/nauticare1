@@ -11,7 +11,7 @@ const CustomPhoneInput = forwardRef<any, any>(({ value, onChange, placeholder, c
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`flex h-12 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        className={`flex h-12 w-full rounded-md border-2 border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
         {...props}
       />
       <style>{`

@@ -77,7 +77,7 @@ const HeroSection = () => {
             Ver Serviços
           </a>
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* Scroll indicator */}
       <motion.div 

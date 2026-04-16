@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import emailjs from '@emailjs/browser';
@@ -9,6 +9,7 @@ import { isValidPhoneNumber } from 'react-phone-number-input';
 import { format } from "date-fns";
 import { useLiveContent } from "@/hooks/useLiveContent";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/ui/use-toast";
 import { boatSizeCategories, type BoatSize, categories } from "@/data/services";
 
 const locations = ["Doca das Fontainhas", "Marina de Tróia"];
@@ -32,6 +33,7 @@ interface BookingFormProps {
 
 export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const { services, packs, boatSizes } = useLiveContent();
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedPack, setSelectedPack] = useState("");
@@ -94,7 +96,11 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if ((selectedServices.length === 0 && !selectedPack) || !name || !email || !phone || !selectedDate) {
-        alert("Por favor, preencha todos os campos obrigatórios.");
+        toast({
+          title: "Campos em falta",
+          description: "Por favor, preencha todos os campos obrigatórios.",
+          variant: "destructive"
+        });
         return;
     }
 
@@ -102,11 +108,19 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
     if (phone && phone.startsWith('+351')) {
       const digitsOnly = phone.replace(/\D/g, '');
       if (digitsOnly.length !== 12) { // 351 + 9 digits = 12
-        alert("O número de telemóvel deve ter exatamente 9 dígitos.");
+        toast({
+          title: "Número Inválido",
+          description: "O número de telemóvel deve ter exatamente 9 dígitos.",
+          variant: "destructive"
+        });
         return;
       }
     } else if (phone && !isValidPhoneNumber(phone)) {
-        alert("Por favor, insira um número de telefone válido.");
+        toast({
+          title: "Número Inválido",
+          description: "Por favor, insira um número de telefone válido.",
+          variant: "destructive"
+        });
         return;
     }
 
@@ -175,7 +189,11 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
           setSubmitted(true);
         } catch (err: any) {
           console.error("Error saving booking:", err);
-          alert(`Erro detalhado: ${err.text || err.message || JSON.stringify(err)}`);
+          toast({
+            title: "Erro ao Reservar",
+            description: "Não foi possível completar a sua reserva. Por favor, tente novamente.",
+            variant: "destructive"
+          });
         }
       };
       saveGuestBooking();
@@ -184,14 +202,14 @@ export const BookingForm = ({ setSubmitted, onSubmit }: BookingFormProps) => {
 
   const isSubmitDisabled = (selectedServices.length === 0 && !selectedPack) || !name || !phone || !selectedDate;
 
-  const formItemVariant = {
+  const formItemVariant: Variants = {
     hidden: { y: 20, opacity: 0 },
-    visible: (i:number) => ({ 
+    visible: (i: number) => ({ 
       y: 0, 
       opacity: 1, 
       transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" } 
     })
-  }
+  };
 
   return (
     <motion.form 

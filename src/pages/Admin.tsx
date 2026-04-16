@@ -13,7 +13,8 @@ import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy,
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { format, parseISO } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone } from "lucide-react";
+import { Phone, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Booking {
     id: string;
@@ -59,6 +60,8 @@ export default function Admin() {
   const [isEditingBoatSize, setIsEditingBoatSize] = useState<any>(null);
   const [customers, setCustomers] = useState<any[]>([]);
   const [customersLoading, setCustomersLoading] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<any>(null);
+  const { toast } = useToast();
 
   const handleUpdatePoints = async (customerId: string, newPoints: number) => {
     try {
@@ -66,6 +69,17 @@ export default function Admin() {
       setCustomers(prev => prev.map(c => c.id === customerId ? { ...c, points: newPoints } : c));
     } catch (err) {
       console.error("Error updating points:", err);
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    try {
+      await deleteDoc(doc(db, 'users', customerToDelete.id));
+      setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
+      setCustomerToDelete(null);
+    } catch (err) {
+      console.error("Error deleting customer:", err);
     }
   };
 
@@ -203,11 +217,23 @@ export default function Admin() {
       console.error("Full upload error object:", err);
       // specific check for common Firebase errors
       if (err.code === 'storage/unauthorized') {
-        alert("Erro: Sem permissão para carregar ficheiros. Verifique as 'Security Rules' no Storage do Firebase Console.");
+        toast({
+          title: "Sem Permissão",
+          description: "Verifique as 'Security Rules' no Storage do Firebase Console.",
+          variant: "destructive"
+        });
       } else if (err.code === 'storage/unknown') {
-        alert("Erro desconhecido. Verifique se o Storage está ativado no Firebase Console.");
+        toast({
+          title: "Erro de Configuração",
+          description: "Verifique se o Storage está ativado no Firebase Console.",
+          variant: "destructive"
+        });
       } else {
-        alert("Erro ao carregar imagem: " + (err.message || "Erro desconhecido"));
+        toast({
+          title: "Erro no Upload",
+          description: err.message || "Erro desconhecido ao carregar imagem.",
+          variant: "destructive"
+        });
       }
     } finally {
       setIsUploading(false);
@@ -219,7 +245,6 @@ export default function Admin() {
     if (!isEditingPack) return;
     try {
       await setDoc(doc(db, 'packs', isEditingPack.id), isEditingPack);
-      await fetchLiveContent();
       setIsEditingPack(null);
     } catch (err) {
       console.error("Error updating pack:", err);
@@ -231,7 +256,6 @@ export default function Admin() {
     if (!isEditingBoatSize) return;
     try {
       await setDoc(doc(db, 'boat_sizes', isEditingBoatSize.id), isEditingBoatSize);
-      await fetchLiveContent();
       setIsEditingBoatSize(null);
     } catch (err) {
       console.error("Error updating boat size:", err);
@@ -284,7 +308,6 @@ export default function Admin() {
         is_confirmed: false,
         created_at: new Date().toISOString()
       });
-      await fetchBookings();
       setBookingFormOpen(false);
     } catch (err) {
       console.error('Error inserting booking:', err);
@@ -295,7 +318,6 @@ export default function Admin() {
     if (!bookingToDelete) return;
     try {
       await deleteDoc(doc(db, 'bookings', bookingToDelete.id));
-      await fetchBookings();
       setBookingToDelete(null);
     } catch (err) {
       console.error('Error deleting booking:', err);
@@ -308,7 +330,6 @@ export default function Admin() {
       await updateDoc(doc(db, 'bookings', selectedBooking.id), {
         is_confirmed: true
       });
-      await fetchBookings();
       setSelectedBooking(null);
     } catch (err) {
       console.error('Error confirming booking:', err);
@@ -576,6 +597,14 @@ export default function Admin() {
                                                         >+</Button>
                                                     </div>
                                                 </div>
+                                                <Button 
+                                                    size="icon" 
+                                                    variant="ghost" 
+                                                    className="text-gray-300 hover:text-red-500 hover:bg-red-50"
+                                                    onClick={() => setCustomerToDelete(customer)}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -871,6 +900,22 @@ export default function Admin() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setBookingToDelete(null)}>Cancelar</Button>
                         <Button variant="destructive" onClick={handleDelete}>Remover</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!customerToDelete} onOpenChange={() => setCustomerToDelete(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Eliminar Perfil de Cliente</DialogTitle>
+                        <DialogDescription>
+                            Tem a certeza que deseja eliminar o perfil de <strong>{customerToDelete?.name}</strong>? 
+                            Isto irá remover todos os seus pontos e histórico local.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCustomerToDelete(null)}>Cancelar</Button>
+                        <Button variant="destructive" onClick={handleDeleteCustomer}>Eliminar Permanentemente</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

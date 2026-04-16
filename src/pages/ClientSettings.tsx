@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
+import { useToast } from '@/components/ui/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { AlertTriangle, Trash2 } from 'lucide-react';
+import { deleteUser } from 'firebase/auth';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { isValidPhoneNumber } from 'react-phone-number-input';
 import Navbar from '@/components/Navbar';
@@ -11,7 +23,6 @@ import { User, Phone, Anchor, Save, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CustomPhoneInput } from '@/components/PhoneInput';
-import { useToast } from '@/components/ui/use-toast';
 
 export default function ClientSettings() {
   const { user, loading: authLoading } = useAuth();
@@ -25,6 +36,8 @@ export default function ClientSettings() {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -101,6 +114,42 @@ export default function ClientSettings() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setIsDeleting(true);
+    try {
+      // 1. Delete Firestore Data
+      await deleteDoc(doc(db, 'users', user.uid));
+      
+      // 2. Delete Auth Account
+      await deleteUser(user);
+      
+      toast({
+        title: "Conta Eliminada",
+        description: "A sua conta e dados foram removidos com sucesso.",
+      });
+      navigate('/');
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/requires-recent-login') {
+        toast({
+          title: "Ação Necessária",
+          description: "Por segurança, precisa de fazer logout e login novamente para eliminar a conta.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Não foi possível eliminar a conta. Tente novamente mais tarde.",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -218,6 +267,43 @@ export default function ClientSettings() {
               </Button>
             </div>
           </form>
+
+          {/* Danger Zone */}
+          <div className="mt-12 pt-8 border-t border-red-100">
+            <h3 className="text-red-600 font-bold flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-4 h-4" /> Zona de Perigo
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Ao eliminar a sua conta, perderá todos os seus pontos de fidelidade e histórico de reservas de forma permanente.
+            </p>
+            
+            <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 transition-colors">
+                  Eliminar Minha Conta
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Tem a certeza absoluta?</DialogTitle>
+                  <DialogDescription>
+                    Esta ação é irreversível. Todos os seus dados, pontos e histórico de embarcações serão apagados permanentemente.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button variant="outline" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}>Cancelar</Button>
+                  <Button 
+                    variant="destructive" 
+                    className="gap-2"
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'A eliminar...' : <><Trash2 className="w-4 h-4" /> Sim, eliminar conta</>}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </motion.div>
       </main>
 

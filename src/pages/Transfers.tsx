@@ -41,29 +41,29 @@ const Transfers = () => {
       <Navbar activeTab="transferes" onTabChange={() => {}} />
 
       {/* Hero Section */}
-      <section className="relative pt-36 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+      <section className="relative pt-28 pb-16 md:pt-48 md:pb-32 overflow-hidden">
         <div className="container relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-16">
+          <div className="flex flex-col lg:flex-row items-center gap-10 md:gap-16">
             <div className="flex-1 text-center lg:text-left">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <span className="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-[0.2em] uppercase text-primary bg-primary/10 rounded-full">
+                <span className="inline-block px-4 py-1.5 mb-6 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-primary bg-primary/10 rounded-full">
                   Novo Serviço Premium
                 </span>
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-foreground mb-6 leading-tight">
+                <h1 className="text-3xl md:text-6xl lg:text-7xl font-display font-bold text-foreground mb-6 leading-tight">
                   Serviços de <span className="text-primary">Transferes</span>
                 </h1>
-                <p className="font-body text-muted-foreground text-base md:text-lg mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                <p className="font-body text-muted-foreground text-sm md:text-lg mb-8 md:mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   Levamos a sua embarcação onde for preciso, com a máxima segurança e profissionalismo. 
                   Desde idas à oficina até mudanças de marina, tratamos de tudo por si.
                 </p>
-                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
                   <button 
                     onClick={() => navigate("/pedir-orcamento-transferes")}
-                    className="px-8 py-4 bg-primary text-white rounded-full font-display font-bold text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all flex items-center gap-2"
+                    className="px-8 py-4 bg-primary text-white rounded-full font-display font-bold text-xs md:text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all flex items-center justify-center gap-2"
                   >
                     Pedir Orçamento <ArrowRight className="w-4 h-4" />
                   </button>
@@ -72,7 +72,7 @@ const Transfers = () => {
                         const el = document.getElementById('details');
                         el?.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="px-8 py-4 glass border-primary/20 text-primary rounded-full font-display font-bold text-sm uppercase tracking-widest hover:bg-primary/5 transition-all"
+                    className="px-8 py-4 glass border-primary/20 text-primary rounded-full font-display font-bold text-xs md:text-sm uppercase tracking-widest hover:bg-primary/5 transition-all"
                   >
                     Saber Mais
                   </button>
@@ -81,12 +81,12 @@ const Transfers = () => {
             </div>
             
             <motion.div 
-              className="flex-1 relative"
+              className="flex-1 w-full relative"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="relative z-10 rounded-[2.5rem] overflow-hidden shadow-2xl premium-shadow border border-white/20">
+              <div className="relative z-10 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl premium-shadow border border-white/20">
                 <img 
                   src={transfersHero} 
                   alt="Serviço de Transfers Nauticare" 

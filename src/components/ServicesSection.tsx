@@ -34,19 +34,19 @@ const ServicesSection = () => {
         </motion.p>
 
         {/* Category tabs */}
-        <div className="flex flex-wrap gap-3 mb-12 md:mb-16">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-8 md:mb-16">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`font-display text-xs uppercase tracking-[0.2em] px-8 py-4 rounded-full border-2 transition-all duration-300 flex items-center gap-2 shadow-sm ${
+              className={`font-display text-[10px] md:text-xs uppercase tracking-[0.2em] px-6 md:px-8 py-3.5 md:py-4 rounded-full border-2 transition-all duration-300 flex items-center justify-center sm:justify-start gap-2 shadow-sm ${
                 activeCategory === cat.id
                   ? "bg-primary text-white border-primary font-bold shadow-lg shadow-primary/20 scale-105"
                   : "bg-white text-gray-500 border-gray-100 hover:border-primary/20 hover:text-primary"
               }`}
             >
               {cat.icon}
-              {cat.label}
+              <span className="whitespace-nowrap">{cat.label}</span>
             </button>
           ))}
         </div>
@@ -56,7 +56,7 @@ const ServicesSection = () => {
           {filteredServices.map((service, index) => (
             <motion.div
               key={service.id}
-              className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-10 group transition-all duration-500 hover-lift premium-shadow border border-gray-50 dark:border-gray-700 relative overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-10 group transition-all duration-500 hover-lift premium-shadow border border-gray-50 dark:border-gray-700 relative overflow-hidden flex flex-col"
               initial={{ y: 30, opacity: 0 }}
               whileInView={{ y: 0, opacity: 1 }}
               viewport={{ once: false, amount: 0.1 }}

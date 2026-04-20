@@ -26,11 +26,11 @@ const PacksSection = () => {
           Combinações estratégicas de serviços para máximo valor e proteção contínua.
         </motion.p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {packs.map((pack, index) => (
             <motion.div
               key={pack.id}
-              className={`relative flex flex-col rounded-[3rem] p-10 transition-all duration-500 shadow-2xl hover-lift ${
+              className={`relative flex flex-col rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 transition-all duration-500 shadow-2xl hover-lift ${
                 pack.featured
                   ? "border-2 border-primary bg-primary/5 backdrop-blur-sm"
                   : "border border-gray-800 bg-gray-900/50"
@@ -41,19 +41,19 @@ const PacksSection = () => {
               transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
               {pack.featured && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white font-display text-[10px] uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg shadow-blue-500/30 font-bold">
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white font-display text-[10px] uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg shadow-blue-500/30 font-bold whitespace-nowrap">
                   Elite Choice
                 </span>
               )}
               {pack.savings && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white font-display text-[10px] uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg shadow-red-500/30 font-bold">
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white font-display text-[10px] uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-lg shadow-red-500/30 font-bold whitespace-nowrap">
                   {pack.savings}
                 </span>
               )}
 
               <div className="flex-grow">
-                <h3 className="text-2xl md:text-3xl font-display text-white mb-4 text-center group-hover:text-primary transition-colors">{pack.name}</h3>
-                <p className="font-body text-gray-500 text-sm leading-relaxed mb-10 text-center px-4">
+                <h3 className="text-xl md:text-3xl font-display text-white mb-3 md:mb-4 text-center group-hover:text-primary transition-colors">{pack.name}</h3>
+                <p className="font-body text-gray-400 text-xs md:text-sm leading-relaxed mb-8 md:mb-10 text-center px-2 md:px-4">
                   {pack.description}
                 </p>
 

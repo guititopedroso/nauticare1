@@ -222,16 +222,16 @@ export const BookingForm = ({ setSubmitted, onSubmit, isAdmin }: BookingFormProp
   return (
     <motion.form 
       onSubmit={handleSubmit} 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 bg-white p-4 md:p-8 rounded-lg"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 md:gap-y-6 bg-white p-3 md:p-8 rounded-xl"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
     >
       {/* ---- COLUMN 1: SERVICES ---- */}
-      <div className="lg:col-span-1 flex flex-col gap-6">
+      <div className="lg:col-span-1 flex flex-col gap-4 md:gap-6">
         {/* Individual Services */}
         <motion.div custom={0} variants={formItemVariant}>
-          <label className="font-body text-sm font-semibold tracking-wide text-gray-700 mb-3 block">
+          <label className="font-body text-xs md:text-sm font-semibold tracking-wide text-gray-700 mb-2 md:mb-3 block">
             1. Escolha os Serviços
           </label>
           <div className="space-y-2">

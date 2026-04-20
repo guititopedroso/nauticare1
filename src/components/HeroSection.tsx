@@ -33,51 +33,51 @@ const HeroSection = () => {
 
 
       {/* Content (Optimized for mobile) */}
-      <motion.div style={{ y: y2, opacity }} className="relative container w-full pt-32 pb-24 md:pb-40">
+      <motion.div style={{ y: y2, opacity }} className="relative container w-full pt-20 md:pt-32 pb-16 md:pb-40">
         <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <img
-            src={logoWhite}
-            alt="Nauticare"
-            className="w-auto h-auto max-w-[85%] md:max-w-4xl lg:max-w-5xl mb-8 md:mb-10 drop-shadow-2xl"
-          />
-        </motion.div>
-
-        <motion.h1
-          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display text-white leading-tight md:leading-none mb-6 mb-8 drop-shadow-md"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        >
-          Detalhe e Manutenção <span className="text-blue-400">Náutica</span>
-        </motion.h1>
-
-        <motion.p
-          className="font-body text-white/80 text-base sm:text-lg md:text-xl max-w-md md:max-w-2xl mb-12 tracking-wide leading-relaxed drop-shadow-sm"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        >
-          Serviços náuticos personalizados e de elite. Transformamos a sua embarcação com o rigor da excelência, da Doca das Fontainhas para as águas da Tróia.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
-          className="flex gap-4"
-        >
-          <a href="#reservar" className="bg-primary text-white px-8 py-4 rounded-full font-bold hover:bg-primary/90 hover:scale-105 transition-all shadow-lg shadow-primary/20">
-            Reservar Agora
-          </a>
-          <a href="#servicos" className="glass text-white px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-all">
-            Ver Serviços
-          </a>
-        </motion.div>
-      </motion.div>
+           initial={{ y: 50, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+         >
+           <img
+             src={logoWhite}
+             alt="Nauticare"
+             className="w-auto h-auto max-w-[80%] md:max-w-4xl lg:max-w-5xl mb-6 md:mb-10 drop-shadow-2xl"
+           />
+         </motion.div>
+ 
+         <motion.h1
+           className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-display text-white leading-tight md:leading-none mb-6 md:mb-8 drop-shadow-md"
+           initial={{ y: 30, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+         >
+           Detalhe e Manutenção <span className="text-blue-400">Náutica</span>
+         </motion.h1>
+ 
+         <motion.p
+           className="font-body text-white/80 text-sm sm:text-lg md:text-xl max-w-md md:max-w-2xl mb-10 md:mb-12 tracking-wide leading-relaxed drop-shadow-sm"
+           initial={{ y: 20, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+         >
+           Serviços náuticos personalizados e de elite. Transformamos a sua embarcação com o rigor da excelência, da Doca das Fontainhas para as águas da Tróia.
+         </motion.p>
+ 
+         <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           transition={{ delay: 1, duration: 1 }}
+           className="flex flex-col sm:flex-row gap-4"
+         >
+           <a href="#reservar" className="bg-primary text-white px-8 py-4 rounded-full font-bold text-center hover:bg-primary/90 hover:scale-105 transition-all shadow-lg shadow-primary/20">
+             Reservar Agora
+           </a>
+           <a href="#servicos" className="glass text-white px-8 py-4 rounded-full font-bold text-center hover:bg-white/10 transition-all">
+             Ver Serviços
+           </a>
+         </motion.div>
+       </motion.div>
 
       {/* Scroll indicator */}
       <motion.div 

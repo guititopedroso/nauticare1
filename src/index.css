@@ -69,7 +69,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased selection:bg-primary/20;
+    @apply bg-background text-foreground font-body antialiased selection:bg-primary/20 overflow-x-hidden;
   }
 
   h1, h2, h3 {
@@ -79,6 +79,7 @@
   /* Smooth scroll for the entire site */
   html {
     scroll-behavior: smooth;
+    @apply overflow-x-hidden;
   }
 }
 

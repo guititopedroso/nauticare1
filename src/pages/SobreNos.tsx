@@ -16,19 +16,19 @@ const SobreNos = () => {
       <Navbar activeTab="sobre" onTabChange={() => {}} />
 
       {/* Hero */}
-      <section className="pt-36 pb-20 md:pt-44 md:pb-28">
-        <div className="container flex flex-col items-center md:flex-row md:justify-center md:items-center gap-8 md:gap-12">
+      <section className="pt-28 pb-12 md:pt-44 md:pb-28">
+        <div className="container flex flex-col items-center md:flex-row md:justify-center md:items-center gap-6 md:gap-12 text-center md:text-left">
           <motion.img
             src={logoProfile}
             alt="Nauticare"
-            className="w-40 md:w-56"
+            className="w-32 md:w-56"
             initial={{ x: -40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
           />
           <div>
           <motion.h1
-            className="text-4xl md:text-6xl font-display font-bold text-foreground mb-6"
+            className="text-3xl md:text-6xl font-display font-bold text-foreground mb-4 md:mb-6"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.19, 1, 0.22, 1] }}

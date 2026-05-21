@@ -45,8 +45,20 @@ const Footer = () => {
 
         {/* Copyright notice */}
         <div className="border-t border-gray-700 mt-12 pt-8">
-          <p className="font-body text-gray-500 text-xs text-center uppercase tracking-widest">
-            © {new Date().getFullYear()} Nauticare. Todos os direitos reservados.
+          <p className="font-body text-gray-500 text-xs text-center uppercase tracking-widest flex items-center justify-center flex-wrap gap-x-2 gap-y-1">
+            <span>© {new Date().getFullYear()} Nauticare. Todos os direitos reservados.</span>
+            <span className="text-gray-700 hidden sm:inline">|</span>
+            <span className="normal-case tracking-normal text-gray-500">
+              Powered By{" "}
+              <a
+                href="https://azmar.pt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-400 hover:underline transition-colors font-semibold"
+              >
+                Azmar
+              </a>
+            </span>
           </p>
         </div>
       </div>
